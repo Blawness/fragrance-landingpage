@@ -22,12 +22,14 @@
     "zustand": "latest"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "eslint": "^9.39.2",
     "eslint-config-next": "latest",
+    "playwright": "^1.60.0",
     "postcss": "latest",
     "tailwindcss": "latest",
     "typescript": "latest"
