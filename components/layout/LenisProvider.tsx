@@ -16,6 +16,8 @@ export function LenisProvider({ children }: { children: ReactNode }) {
     const lenis = new Lenis({
       lerp: 0.1,
       smoothWheel: true,
+      syncTouch: true,
+      touchInertiaExponent: 1.2,
     });
 
     lenis.on("scroll", ScrollTrigger.update);
@@ -27,12 +29,15 @@ export function LenisProvider({ children }: { children: ReactNode }) {
     gsap.ticker.add(update);
     gsap.ticker.lagSmoothing(0);
 
-    document.fonts.ready.then(() => ScrollTrigger.refresh());
-    window.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
+    const refresh = () => ScrollTrigger.refresh();
+    document.fonts.ready.then(refresh);
+    window.addEventListener("load", refresh, { once: true });
+    window.addEventListener("resize", refresh);
 
     return () => {
       gsap.ticker.remove(update);
       lenis.destroy();
+      window.removeEventListener("resize", refresh);
     };
   }, []);
 

@@ -17,17 +17,23 @@ export function ProductSequence() {
   const reducedMotion = useReducedMotionPref();
   const copy = getSection("sequence");
 
+  const scrollSetupDone = useRef(false);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const image = frames[0];
-    if (!canvas || !image) return;
+    if (!canvas || !image || !image.width || !image.height) return;
 
     const context = canvas.getContext("2d");
     if (!context) return;
 
     const ratio = window.devicePixelRatio || 1;
-    const width = canvas.clientWidth * ratio;
-    const height = canvas.clientHeight * ratio;
+    const cw = canvas.clientWidth;
+    const ch = canvas.clientHeight;
+    if (!cw || !ch) return;
+
+    const width = cw * ratio;
+    const height = ch * ratio;
     canvas.width = width;
     canvas.height = height;
     drawCover(context, image, width, height);
@@ -35,7 +41,17 @@ export function ProductSequence() {
 
   useGSAP(
     () => {
-      if (!scope.current || !canvasRef.current || frames.length === 0) return;
+      if (
+        !scope.current ||
+        !canvasRef.current ||
+        frames.length === 0 ||
+        !ready ||
+        scrollSetupDone.current
+      ) {
+        return;
+      }
+
+      scrollSetupDone.current = true;
       const gsap = setupGsap();
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
@@ -43,14 +59,21 @@ export function ProductSequence() {
 
       const drawFrame = (progress: number) => {
         const index = Math.min(frames.length - 1, Math.floor(progress * (frames.length - 1)));
+        const image = frames[index];
+        if (!image || !image.width || !image.height) return;
+
         const ratio = window.devicePixelRatio || 1;
-        const width = canvas.clientWidth * ratio;
-        const height = canvas.clientHeight * ratio;
+        const cw = canvas.clientWidth;
+        const ch = canvas.clientHeight;
+        if (!cw || !ch) return;
+
+        const width = cw * ratio;
+        const height = ch * ratio;
         if (canvas.width !== width || canvas.height !== height) {
           canvas.width = width;
           canvas.height = height;
         }
-        drawCover(context, frames[index], width, height);
+        drawCover(context, image, width, height);
 
         const active =
           copy?.captions?.reduce((current, item) => {
@@ -82,7 +105,7 @@ export function ProductSequence() {
         },
       );
     },
-    { scope, dependencies: [frames, reducedMotion, copy] },
+    { scope, dependencies: [frames, ready, reducedMotion, copy] },
   );
 
   return (
