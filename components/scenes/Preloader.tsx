@@ -11,16 +11,19 @@ export function Preloader() {
   const scope = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [assetReady, setAssetReady] = useState(false);
+  const [done, setDone] = useState(false);
   const setPreloaderDone = useUiStore((state) => state.setPreloaderDone);
   const reducedMotion = useReducedMotionPref();
 
   useEffect(() => {
     const seen = sessionStorage.getItem("nue-preloader-seen") === "true";
     if (seen || reducedMotion) {
+      document.documentElement.style.overflow = "";
       queueMicrotask(() => {
         setProgress(100);
         setAssetReady(true);
         setPreloaderDone(true);
+        setDone(true);
       });
       return;
     }
@@ -57,6 +60,7 @@ export function Preloader() {
             sessionStorage.setItem("nue-preloader-seen", "true");
             document.documentElement.style.overflow = "";
             setPreloaderDone(true);
+            setDone(true);
           },
         })
         .to("[data-preloader-brand] span", {
@@ -73,7 +77,7 @@ export function Preloader() {
     { scope, dependencies: [progress, reducedMotion] },
   );
 
-  if (reducedMotion || progress >= 100) {
+  if (done) {
     return null;
   }
 
